@@ -1,13 +1,26 @@
 import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes.js';
+
+dotenv.config();
 
 const app = express();
 
-const PORT = 5000;
+// Middlewares
+app.use(express.json());
+app.use(cors());
 
-app.get('/', (req, res) => {
-  res.send('Servidor funcionando');
+// Rutas
+app.use('/api/auth', authRoutes);
+
+// Manejo de errores básico (Punto 6 de la rúbrica)
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send({ error: 'Algo salió mal en el servidor culinario' });
 });
 
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+    console.log(`Servidor de Culinaria Store corriendo en puerto ${PORT}`);
 });
