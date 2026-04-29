@@ -5,6 +5,11 @@ import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -19,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/productos', productRoutes);
 app.use('/api/carrito', cartRoutes);
 app.use('/api/ventas', orderRoutes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Manejo de errores básico (Punto 6 de la rúbrica)
 app.use((err, req, res, next) => {
