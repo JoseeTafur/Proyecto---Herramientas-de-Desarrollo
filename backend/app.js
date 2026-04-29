@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(cors());
 
 // Rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/productos', productRoutes);
 
 // Manejo de errores básico (Punto 6 de la rúbrica)
 app.use((err, req, res, next) => {
