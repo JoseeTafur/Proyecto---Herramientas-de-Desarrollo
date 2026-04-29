@@ -1,40 +1,22 @@
-import db from '../config/db.js';
+// routes/cartRoutes.js (EL ÚNICO Y REAL)
+import express from 'express';
+import { addToCart, getCart, syncCart, removeFromCart } from '../controllers/cartController.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
 
-const cartModel = {
-    addItem: async (id_usuario, id_producto, cantidad) => {
-        // Si el producto ya está en el carrito, sumamos la cantidad
-        const [exists] = await db.query(
-            'SELECT * FROM carrito WHERE id_usuario = ? AND id_producto = ?',
-            [id_usuario, id_producto]
-        );
+const router = express.Router();
 
-        if (exists.length > 0) {
-            return await db.query(
-                'UPDATE carrito SET cantidad = cantidad + ? WHERE id_usuario = ? AND id_producto = ?',
-                [cantidad, id_usuario, id_producto]
-            );
-        }
+// Usamos el middleware para todas las rutas
+router.use(verifyToken); 
 
-        return await db.query(
-            'INSERT INTO carrito (id_usuario, id_producto, cantidad) VALUES (?, ?, ?)',
-            [id_usuario, id_producto, cantidad]
-        );
-    },
+// Obtener carrito: GET /api/carrito/
+router.get('/', getCart);
 
-    getByUser: async (id_usuario) => {
-        const [rows] = await db.query(`
-            SELECT c.*, p.nombre_producto, p.precio, p.imagen_url 
-            FROM carrito c 
-            JOIN productos p ON c.id_producto = p.id_producto 
-            WHERE c.id_usuario = ?`, 
-            [id_usuario]
-        );
-        return rows;
-    },
+// Añadir producto: POST /api/carrito/add  <-- AHORA SÍ COINCIDE
+router.post('/add', addToCart);
 
-    removeItem: async (id_carrito) => {
-        return await db.query('DELETE FROM carrito WHERE id_carrito = ?', [id_carrito]);
-    }
-};
+// Sincronizar (opcional por ahora): POST /api/carrito/sync
+router.post('/sync', syncCart);
 
-export default cartModel;
+router.delete('/:id_producto', verifyToken, removeFromCart);
+
+export default router;
