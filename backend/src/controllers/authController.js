@@ -58,31 +58,28 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const userId = req.userId;
         const { nombre, apellido, correo } = req.body;
-        
-        // Buscamos si ya tenía una foto para no perderla si no sube una nueva
-        const [userRows] = await db.query('SELECT foto_url FROM usuarios WHERE id_usuario = ?', [userId]);
-        let foto_url = userRows[0]?.foto_url;
+        const userId = req.userId;
+        let query = "UPDATE usuarios SET nombre = ?, apellido = ?, correo = ? WHERE id_usuario = ?";
+        let params = [nombre, apellido, correo, userId];
 
-        // Si Multer procesó un archivo nuevo, actualizamos la ruta
+        // Si Multer procesó una foto, cambiamos la consulta
         if (req.file) {
-            foto_url = `/uploads/perfiles/${req.file.filename}`;
+            const foto_url = `/uploads/perfiles/${req.file.filename}`;
+            query = "UPDATE usuarios SET nombre = ?, apellido = ?, correo = ?, foto_url = ? WHERE id_usuario = ?";
+            params = [nombre, apellido, correo, foto_url, userId];
         }
 
-        const [result] = await db.query(
-            'UPDATE usuarios SET nombre = ?, apellido = ?, correo = ?, foto_url = ? WHERE id_usuario = ?',
-            [nombre, apellido, correo, foto_url, userId]
-        );
+        const [result] = await db.query(query, params);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
 
-        res.json({ message: "Perfil actualizado con éxito", foto_url });
+        res.json({ message: "Perfil actualizado correctamente" });
     } catch (error) {
-        console.error("CRASH EN UPDATE_PROFILE:", error); // Revisa esto en tu terminal de VS Code
-        res.status(500).json({ message: "Error interno del servidor", details: error.message });
+        console.error("Error en updateProfile:", error);
+        res.status(500).json({ error: "Error interno al actualizar perfil" });
     }
 };
 
